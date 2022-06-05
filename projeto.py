@@ -252,3 +252,204 @@ def MovRoboXY(sen,cos, xri, yri, deltaX, deltaY, tempo, trajbola):
     else:
         pass
     return Tencontro, SxRobo, SyRobo, VxRobo, VyRobo, AxRobo, AyRobo, indice
+    
+
+def RetaRoboTraj2(xr, yr, trajbola):
+    for i in range(len(trajbola)):
+        if trajbola[i][0]=='5.00':
+            xb=float(trajbola[i][1])
+            yb=float(trajbola[i][2])
+    print(f"O ponto final é : ({xb}, {yb})")
+    deltaY = yb-yr
+    deltaX = xb-xr
+    print(f"O delta X é : {deltaX} e o DeltaY é igual a: {deltaY}")
+    m = (deltaY)/(deltaX)
+    c = yr-(xr*m)
+    angulo = math.degrees(math.atan(m))
+    return m, c, angulo, deltaX, deltaY
+    
+def RetaRoboTraj(xr, yr, trajbola):
+    for i in range(len(trajbola)):
+        if trajbola[i][0]=='8.00':
+            xb=float(trajbola[i][1])
+            yb=float(trajbola[i][2])
+    print(f"O ponto final é : ({xb}, {yb})")
+    deltaY = yb-yr
+    deltaX = xb-xr
+    print(f"O delta X é : {deltaX} e o DeltaY é igual a: {deltaY}")
+    m = (deltaY)/(deltaX)
+    c = yr-(xr*m)
+    angulo = math.degrees(math.atan(m))
+    return m, c, angulo, deltaX, deltaY
+         
+distRB=[]
+
+def RaioInterceptação (xr, yr, t, trajbola):
+    for i in range(len(trajbola)):
+        if t == trajbola[i][0]:
+            xb=float(trajbola[i][1])
+            yb=float(trajbola[i][2])
+    dist=sqrt(((xr-xb)**2)+((yr-yb)**2))
+    distRB.append(round(dist, 4))
+    if dist <= 0.09:
+        print(f"O Robo se encontrou com a bola no tempo {t} com Dist = {dist:.4f}")
+        return 1
+    else:
+        print(f"nada dist = {dist:.4f}")
+        return 0 
+
+
+def RegraUmMetro(x, y, trajbola):
+    xbi=float(trajbola[0][1])
+    ybi=float(trajbola[0][2])
+    dist=sqrt(((x-xbi)**2)+((y-ybi)**2))
+    if dist <= 1:
+        print("""
+        O ponto inserido respeita a regra de estar a menos de um metro da bola
+        Continuando programa...
+        """)
+        return 0
+    else:
+        print("""
+        O ponto inserido está a mais de um metro da bola
+        Voltando ao menu...
+        """)
+        return 1
+
+def SBolaXY(tempo):
+    SxBola=[]
+    SyBola=[]
+    for i in tempo:
+        t = float(i)
+        X = -0.005*(t**2)+ 0.5*t + 1
+        Y = -0.008*(t**2) + 0.4*t + 0.5
+        SxBola.append(round(X, 4))
+        SyBola.append(round(Y, 4))
+    return SxBola, SyBola
+    
+def VBolaXY(tempo):
+    VxBola=[]
+    VyBola=[]
+    for i in tempo:
+        t = float(i)
+        Vx = -0.005*2*t+ 0.5
+        Vy = -0.008*2*t + 0.4
+        VxBola.append(round(Vx, 4))
+        VyBola.append(round(Vy, 4))
+    return VxBola, VyBola
+
+def ABolaXY(tempo):
+    AxBola=[]
+    AyBola=[]
+    for i in tempo:
+        Ax = -0.005*2
+        Ay = -0.008*2
+        AxBola.append(round(Ax, 4))
+        AyBola.append(round(Ay, 4))
+    return AxBola, AyBola
+
+def main():
+    traje_bola, tempo = TrajetoriaBola()
+    xri = float(input("\nPonto inical do Robo FEI no eixo X: ").replace(",", "."))
+    yri = float(input("Ponto inical do Robo FEI no eixo y: ").replace(",", "."))
+    if RegraUmMetro(xri, yri, traje_bola) == 0:
+        pass
+    else:
+        return False
+    m, c, angulo, deltaX, deltaY= RetaRoboTraj(xri, yri, traje_bola)
+
+    print(f"A RETA DO ROBO NO CAMPO É: y = {m:.3f}x + {c:.3f}")
+    print(f"o angulo da reta é :{angulo:.2f}")
+    print(f"O cosseno do angulo é: {math.cos(math.radians(angulo)):.3f}")
+    print(f"O seno do angulo é: {math.sin(math.radians(angulo)):.3f}")
+    coss = math.cos(math.radians(angulo))
+    seno = math.sin(math.radians(angulo))
+
+    Tfinal, SxRobo, SyRobo, VxRobo, VyRobo, AxRobo, AyRobo = MovRoboXY(seno,coss, xri, yri,deltaX, deltaY, tempo, traje_bola)
+    print(f"Tempo do encontro: {Tfinal}")
+    print(f"SxRobo: {SxRobo}")
+    print(f"SyRobo: {SyRobo}")
+    print(f"VxRobo: {VxRobo}")
+    print(f"VyRobo: {VyRobo}")
+    print(f"AxRobo: {AxRobo}")
+    print(f"AyRobo: {AyRobo}")
+    print("\n")
+    SxBola, SyBola = SBolaXY(tempo, Tfinal)
+    VxBola, VyBola = VBolaXY(tempo, Tfinal)
+    AxBola, AyBola = ABolaXY(tempo, Tfinal)
+    print(f"SxBola: {SxBola}")
+    print(f"SyBola: {SyBola}")
+    print(f"VxBola: {VxBola}")
+    print(f"VyBola: {VyBola}")
+    print(f"AxBola: {AxBola}")
+    print(f"AyBola: {AyBola}")
+    print(f"Dist Robo x Bola: {distRB}")
+    
+
+def sem_limites():
+    traje_bola, tempo = TrajetoriaBola()
+    xri = float(input("\nPonto inical do Robo FEI no eixo X: ").replace(",", "."))
+    yri = float(input("Ponto inical do Robo FEI no eixo y: ").replace(",", "."))
+    m, c, angulo, deltaX, deltaY= RetaRoboTraj(xri, yri, traje_bola)
+
+    print(f"A RETA DO ROBO NO CAMPO É: y = {m:.3f}x + {c:.3f}")
+    print(f"o angulo da reta é {angulo:.2f}")
+    print(f"O cosseno do angulo é: {math.cos(math.radians(angulo)):.3f}")
+    print(f"O seno do angulo é: {math.sin(math.radians(angulo)):.3f}")
+    coss = math.cos(math.radians(angulo))
+    seno = math.sin(math.radians(angulo))
+
+    Tfinal, SxRobo, SyRobo, VxRobo, VyRobo, AxRobo, AyRobo, indice = MovRoboXY(seno,coss, xri, yri,deltaX, deltaY, tempo, traje_bola)
+    tgraf=[]
+    for i in range(0, indice+1):
+        temp = float(tempo[i])
+        tgraf.append(temp)
+    print(f"Tempo do encontro: {Tfinal}")
+    print(f"SxRobo: {SxRobo}")
+    print(f"SyRobo: {SyRobo}")
+    print(f"VxRobo: {VxRobo}")
+    print(f"VyRobo: {VyRobo}")
+    print(f"AxRobo: {AxRobo}")
+    print(f"AyRobo: {AyRobo}")
+    print("\n")
+    SxBola, SyBola = SBolaXY(tgraf)
+    VxBola, VyBola = VBolaXY(tgraf)
+    AxBola, AyBola = ABolaXY(tgraf)
+    print(f"SxBola: {SxBola}")
+    print(f"SyBola: {SyBola}")
+    print(f"VxBola: {VxBola}")
+    print(f"VyBola: {VyBola}")
+    print(f"AxBola: {AxBola}")
+    print(f"AyBola: {AyBola}")
+    print(f"Tgraf: {tgraf}")
+    print(f"Dist Robo x Bola: {distRB}")
+    """campo(SxBola, SyBola, SxRobo, SyRobo)
+    posiçãoRBX(SxBola, SxRobo, tgraf)
+    posiçãoRBY(SyBola, SyRobo, tgraf)
+    VeloRBY(VyBola, VyRobo, tempo)"""
+
+def menu():
+    while True:
+        print("\nBem vindo ao simulador de trajétória do Robo FEI")
+        resp = input("""
+        ---------------------
+
+        1- Começar Simulação
+        2- Sem Limites
+        3- Sair
+        
+        ---------------------
+        
+        Resposta: """)
+        if resp == "1":
+            main()
+        elif resp == "2":
+            sem_limites()
+        elif resp == "3":
+            break
+        else:
+            print("""Digite uma opção válida do Menu
+            Voltando ao Menu...
+            """)
+
+menu()        
